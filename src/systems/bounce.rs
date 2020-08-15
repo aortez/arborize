@@ -1,62 +1,55 @@
 extern crate amethyst;
 use amethyst::ecs::prelude::{Component, DenseVecStorage};
 
-mod pong
-{
+mod pong {
     use amethyst::ecs::prelude::*;
 
-    pub struct Ball
-    {
-        pub velocity: [f32; 2],
-        pub radius: f32,
+    pub struct Ball {
+       pub velocity: [f32; 2],
+       pub radius: f32,
     }
-    impl Component for Ball
-    {
-        type Storage = DenseVecStorage<Self>;
+    impl Component for Ball {
+       type Storage = DenseVecStorage<Self>;
     }
 
     #[derive(PartialEq, Eq)]
-    pub enum Side
-    {
-        Left,
-        Right,
+    pub enum Side {
+      Left,
+      Right,
     }
 
-    pub struct Paddle
-    {
-        pub side: Side,
-        pub width: f32,
-        pub height: f32,
+    pub struct Paddle {
+      pub side: Side,
+      pub width: f32,
+      pub height: f32,
     }
-    impl Component for Paddle
-    {
-        type Storage = VecStorage<Self>;
+    impl Component for Paddle {
+      type Storage = VecStorage<Self>;
     }
 
     pub const ARENA_HEIGHT: f32 = 100.0;
+    pub const ARENA_WIDTH: f32 = 100.0;
 }
 
 use amethyst::{
-    core::{SystemDesc, Transform},
+    core::{Transform, SystemDesc},
     derive::SystemDesc,
     ecs::prelude::{Join, ReadStorage, System, SystemData, World, WriteStorage},
 };
 
-use crate::pong::{Ball, Paddle, Side, ARENA_HEIGHT};
+use crate::pong::{Ball, Side, Paddle, ARENA_HEIGHT, ARENA_WIDTH};
 
 #[derive(SystemDesc)]
 pub struct BounceSystem;
 
-impl<'s> System<'s> for BounceSystem
-{
+impl<'s> System<'s> for BounceSystem {
     type SystemData = (
         WriteStorage<'s, Ball>,
         ReadStorage<'s, Paddle>,
         ReadStorage<'s, Transform>,
     );
 
-    fn run(&mut self, (mut balls, paddles, transforms): Self::SystemData)
-    {
+    fn run(&mut self, (mut balls, paddles, transforms): Self::SystemData) {
         // Check whether a ball collided, and bounce off accordingly.
         //
         // We also check for the velocity of the ball every time, to prevent multiple collisions
@@ -72,16 +65,19 @@ impl<'s> System<'s> for BounceSystem
                 ball.velocity[1] = -ball.velocity[1];
             }
 
+            // Bounce off sides.
+            if (ball_x <= ball.radius && ball.velocity[0] < 0.0)
+                || (ball_x >= ARENA_WIDTH - ball.radius && ball.velocity[0] > 0.0)
+            {
+                ball.velocity[0] = -ball.velocity[0];
+            }
+
             // Bounce at the paddles.
             for (paddle, paddle_transform) in (&paddles, &transforms).join() {
                 let paddle_x = paddle_transform.translation().x - (paddle.width * 0.5);
                 let paddle_y = paddle_transform.translation().y - (paddle.height * 0.5);
 
-                // To determine whether the ball has collided with a paddle, we create a larger
-                // rectangle around the current one, by subtracting the ball radius from the
-                // lowest coordinates, and adding the ball radius to the highest ones. The ball
-                // is then within the paddle if its center is within the larger wrapper
-                // rectangle.
+                // Bounce off paddles.
                 if point_in_rect(
                     ball_x,
                     ball_y,
@@ -103,9 +99,6 @@ impl<'s> System<'s> for BounceSystem
 
 // A point is in a box when its coordinates are smaller or equal than the top
 // right and larger or equal than the bottom left.
-fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -> bool
-{
+fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -> bool {
     x >= left && x <= right && y >= bottom && y <= top
 }
-
-fn main() {}

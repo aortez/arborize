@@ -63,5 +63,3 @@ impl<'s> System<'s> for PaddleSystem
         }
     }
 }
-
-fn main() {}

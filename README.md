@@ -1,4 +1,4 @@
-# pong
+# arborize
 
 ## How to run
 

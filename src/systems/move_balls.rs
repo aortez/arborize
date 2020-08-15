@@ -46,5 +46,3 @@ impl<'s> System<'s> for MoveBallsSystem
         }
     }
 }
-
-fn main() {}
