@@ -1,0 +1,3 @@
+brace_style = "AlwaysNextLine"
+indent_style = "Block"
+reorder_imports = true
