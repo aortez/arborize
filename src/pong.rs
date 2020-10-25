@@ -85,7 +85,8 @@ impl SimpleState for Pong
             }
             if timer <= 0.0 {
                 // When timer expires, spawn a ball.
-                initialise_ball(data.world, self.sprite_sheet_handle.clone().unwrap());
+                initialise_ball(data.world, self.sprite_sheet_handle.clone().unwrap(), ARENA_WIDTH * 0.4, ARENA_HEIGHT * 0.5);
+                initialise_ball(data.world, self.sprite_sheet_handle.clone().unwrap(), ARENA_WIDTH * 0.6, ARENA_HEIGHT * 0.5);
             } else {
                 // If timer is not expired yet, put it back onto the state.
                 self.ball_spawn_timer.replace(timer);
@@ -108,11 +109,11 @@ impl Component for Ball
 }
 
 /// Initialises one ball in the middle-ish of the arena.
-fn initialise_ball(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
+fn initialise_ball(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>, x: f32, y: f32)
 {
     // Create the translation.
     let mut local_transform = Transform::default();
-    local_transform.set_translation_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
+    local_transform.set_translation_xyz(x, y, 0.0);
 
     // Assign the sprite for the ball
     let sprite_render = SpriteRender {
